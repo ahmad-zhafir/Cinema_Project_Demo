@@ -10,13 +10,20 @@
         - Pre-compile target ensures lib.dir exists for runtime libraries (e.g., JDatePicker)
     -->
 
-    <target name="-pre-compile">
-        <!-- Set lib.dir property if not already set -->
-        <property name="lib.dir" value="build/lib"/>
+<target name="-pre-compile">
+    <!-- Ensure lib.dir exists -->
+    <property name="lib.dir" value="build/lib"/>
+    <mkdir dir="${lib.dir}"/>
 
-        <!-- Create the directory if it doesn't exist -->
-        <mkdir dir="${lib.dir}"/>
-    </target>
+    <!-- Include all JARs in lib.dir for compilation -->
+    <path id="project.classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <!-- Tell NetBeans Ant to use this classpath for javac -->
+    <property name="javac.classpath" refid="project.classpath"/>
+</target>
+
 
     <!--
         Optional: You can add more pre/post hooks here if needed
@@ -26,3 +33,4 @@
     -->
 
 </project>
+
