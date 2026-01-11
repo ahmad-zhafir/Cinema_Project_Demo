@@ -1,4 +1,4 @@
-name: SonarCloud analysis
+name: SonarCloud Analysis
 
 on:
   push:
@@ -15,27 +15,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2. Set up Java environment
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
 
+      # 3. Download JDatePicker JAR to build/lib
       - name: Download JDatePicker JAR
         run: |
           mkdir -p build/lib
           curl -L -o build/lib/jdatepicker-1.3.4.jar https://repo1.maven.org/maven2/org/jdatepicker/jdatepicker/1.3.4/jdatepicker-1.3.4.jar
-          echo "Downloaded files:"
+          if [ ! -f build/lib/jdatepicker-1.3.4.jar ]; then
+            echo "ERROR: JDatePicker JAR download failed!"
+            exit 1
+          fi
+          echo "Downloaded files in build/lib:"
           ls -l build/lib
 
+      # 4. Build project with Ant
       - name: Build project with Ant
-        run: ant clean compile -Dlib.dir=build/lib
+        run: |
+          echo "Building project..."
+          ant clean compile -lib build/lib/jdatepicker-1.3.4.jar
+        env:
+          ANT_OPTS: "-Xmx1024m"
 
+      # 5. Run SonarCloud analysis
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
         env:
